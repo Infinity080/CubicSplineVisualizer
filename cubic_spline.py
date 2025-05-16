@@ -1,11 +1,11 @@
 import tkinter as tk
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 
 def cubic_spline(x, y):
-
-
     n = len(x) - 1  
     h = np.diff(x)  
 
@@ -50,26 +50,31 @@ def calculate_spline(splines, x_vals, x):
         i += 1
     return y_vals
 
+def draw(x, y, ax):
+    ax.clear()
 
-def draw(x, y):
+    splines = cubic_spline(x, y)
 
-    splines = cubic_spline(x,y)
+    x_smooth_values = np.linspace(x[0], x[-1], 10000)
+    y_smooth_values = calculate_spline(splines, x_smooth_values, x)
 
-    x_smooth_values = np.linspace(x[0],x[-1],10000)
-    y_smooth_values = calculate_spline(splines,x_smooth_values,x)
+    ax.plot(x, y, "o")
+    ax.plot(x_smooth_values, y_smooth_values, "red")
 
-    print(y_smooth_values)
+    ax.figure.canvas.draw()
 
-
-    plt.plot(x,y,"o")
-    plt.plot(x_smooth_values,y_smooth_values,"red")
-
-    plt.show()
     return y_smooth_values
 
 class CubicSplineApp:
     def __init__(self, root):
         self.root = root
+
+        self.figure = Figure(figsize=(5, 5))
+        self.ax = self.figure.add_subplot()
+        self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
+        self.canvas.get_tk_widget().pack()
+
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.x = [0]
         self.y = [0]
@@ -78,6 +83,9 @@ class CubicSplineApp:
         self.create_widgets()
         self.update_plot()
 
+    def on_closing(self):
+        plt.close('all')
+        self.root.destroy()
 
     def create_widgets(self):
         control_frame = tk.Frame(self.root)
@@ -112,7 +120,7 @@ class CubicSplineApp:
 
     def update_plot(self):
         plt.clf()
-        self.smooth = draw(self.x, self.y)
+        self.smooth = draw(self.x, self.y, self.ax)
 
     def add_point(self):
         try:
