@@ -1,7 +1,6 @@
 import tkinter as tk
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import CubicSpline
 
 
 def cubic_spline(x, y):
@@ -158,25 +157,38 @@ class CubicSplineApp:
 
     def calculate_derivative(self):
         try:
-            splines = cubic_spline(self.x,self.y)
             point = float(self.x_entry.get())
+            splines = cubic_spline(self.x, self.y)
 
-            deriv = CubicSpline(self.x,self.y).derivative()(point)
+            for i in range(len(self.x) - 1):
+                if self.x[i] <= point <= self.x[i + 1]:
+                    _, b, c, d = splines[i]
+                    dx = point - self.x[i]
+                    deriv = b + 2 * c * dx + 3 * d * dx**2
+                    self.status_label.config(text=f"First derivative at x={point}: {deriv:.2f}")
+                    return
 
-            self.status_label.config(text=f"First derivative at x={point}: {deriv:.2f}")
+            self.status_label.config(text="x out of range.")
         except ValueError:
             self.status_label.config(text="Invalid input.")
 
     def calculate_derivative2(self):
         try:
-            splines = cubic_spline(self.x,self.y)
             point = float(self.x_entry.get())
+            splines = cubic_spline(self.x, self.y)
 
-            deriv = CubicSpline(self.x,self.y).derivative()(point,2)
+            for i in range(len(self.x) - 1):
+                if self.x[i] <= point <= self.x[i + 1]:
+                    _, _, c, d = splines[i]
+                    dx = point - self.x[i]
+                    deriv2 = 2 * c + 6 * d * dx
+                    self.status_label.config(text=f"Second derivative at x={point}: {deriv2:.2f}")
+                    return
 
-            self.status_label.config(text=f"Second derivative at x={point}: {deriv:.2f}")
+            self.status_label.config(text="x out of range.")
         except ValueError:
             self.status_label.config(text="Invalid input.")
+
 
     def get_value(self):
         try:
