@@ -76,12 +76,32 @@ class CubicSplineApp:
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+        self.canvas.mpl_connect("button_press_event", self.on_plot_click)
+
         self.x = [0]
         self.y = [0]
         self.smooth = []
 
         self.create_widgets()
         self.update_plot()
+        
+    def on_plot_click(self, event):
+        if event.inaxes == self.ax:
+            x_clicked = event.xdata
+            y_clicked = event.ydata
+
+            if x_clicked in self.x:
+                return
+
+            self.x.append(x_clicked)
+            self.y.append(y_clicked)
+
+            temp = np.argsort(self.x)
+            self.x = [self.x[i] for i in temp]
+            self.y = [self.y[i] for i in temp]
+
+            self.status_label.config(text=f"Added point: ({x_clicked:.2f}, {y_clicked:.2f})")
+            self.update_plot()
 
     def on_closing(self):
         plt.close('all')
